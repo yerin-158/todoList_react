@@ -3,7 +3,6 @@ import TodoTemplate from './components/TodoTemplate';
 import TodoInsert from './components/TodoInsert';
 import TodoList from './components/TodoList';
 
-
 const createBulkTodos = () => {
   const array = [];
   for (let i = 1; i <= 2500; i++) {
@@ -28,7 +27,6 @@ const todoReducer = (state, action) => {
       return state;
   }
 }
-
 
 const App = () => {
 
