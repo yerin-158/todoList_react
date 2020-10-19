@@ -1,51 +1,57 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useReducer, useRef, useState } from 'react';
 import TodoTemplate from './components/TodoTemplate';
 import TodoInsert from './components/TodoInsert';
 import TodoList from './components/TodoList';
 
 
+const createBulkTodos = () => {
+  const array = [];
+  for (let i = 1; i <= 2500; i++) {
+    array.push({
+      id: i,
+      text: `할 일 ${i}`,
+      checked: false,
+    })
+  }
+  return array;
+}
+
+const todoReducer = (state, action) => {
+  switch (action.type) {
+    case 'INSERT' :
+      return state.concat(action.todo);
+    case 'REMOVE' :
+      return state.filter(todo => todo.id !== action.id);
+    case 'UPDATE' :
+      return state.map(todo => todo.id === action.id? { ...todo, checked: !todo.checked} : todo);
+    default :
+      return state;
+  }
+}
+
+
 const App = () => {
 
-  const init = [
-    {
-      id: 1,
-      text: '리액트 기초 알아보기',
-      checked: true
-    },
-    {
-      id: 2,
-      text: '컴포넌트 스타일링 알아보기',
-      checked: true
-    },
-    {
-      id: 3,
-      text: '일정 관리 앱 만들기',
+  const nextId = useRef(2501); //고유값으로 사용될 id
+
+  const [todos, dispatch] = useReducer(todoReducer, undefined, createBulkTodos);
+
+  const addTodoItem = useCallback(text => {
+    const todo = {
+      id: nextId,
+      text: text,
       checked: false
-    }
-  ];
+    };
+    dispatch({type: 'INSERT', todo: todo});
+  }, []);
 
-  const nextId = useRef(4); //고유값으로 사용될 id
+  const deleteTodoItem = useCallback(id => {
+    dispatch({type: 'REMOVE', id: id})
+  }, [])
 
-  const [todos, setTodos] = useState(init);
-  const addTodoItem = useCallback( text => {
-    const nextTodos = todos.concat({
-        id: nextId.current,
-        text: text,
-        checked: false
-    });
-    setTodos(nextTodos);
-    nextId.current += 1;
-  },[todos]);
-
-  const deleteTodoItem = useCallback( id => {
-    const nextTodos = todos.filter(todo => todo.id !== id);
-    setTodos(nextTodos);
-  },[todos]);
-
-  const checkTodoItem = useCallback( id => {
-    const nextTodos = todos.map(todo => todo.id === id? { ...todo, checked: !todo.checked} : todo);
-    setTodos(nextTodos);
-  },[todos]);
+  const checkTodoItem = useCallback(id => {
+    dispatch({type: 'UPDATE', id: id})
+  }, []);
 
   return (
     <TodoTemplate>
